@@ -11,13 +11,14 @@ import {
 } from "@/store/Account";
 import {
   clearSearchFilter,
+  clearSearchSort,
   getBranches,
   searchBranches,
   sortBranches,
   useBranchStore,
 } from "@/store/Branch";
 import { getBranchesMetric, useMetricStore } from "@/store/Metric";
-import { toggleDashoardLoader, useUIStore } from "@/store/UI";
+import { useUIStore } from "@/store/UI";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -34,33 +35,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { popoverDropdownStyle, popoverStyle } from "@/lib/styles";
 import {
   faChevronDown,
   faEllipsisV,
-  faMagnifyingGlass,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { useEffect, useRef, useState } from "react";
 import BranchForm from "@/components/custom/BranchForm";
 import { Check, FilterX, Search, X } from "lucide-react";
 import Loader from "@/components/custom/Loader";
 import Image from "next/image";
+import MetricLoaderSection from "@/sections/MetricLoaderSection";
+import BranchLoader from "@/components/custom/lazy loaders/BranchLoader";
+import { motion } from "framer-motion";
+import { sectionVariants } from "@/lib/framerVariants";
 
 const Branches = () => {
   const [profile] = useAccountStore((state) => [state.profile]);
@@ -73,6 +65,7 @@ const Branches = () => {
   const [sortByTitle, setSortByTitle] = useState("-created_at");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
+  const [branchLoader, setBranchLoader] = useState(true);
   // const [isFirstRender, setIsFirstRender] = useState(1);
   const isFirstRender = useRef(true);
 
@@ -96,7 +89,7 @@ const Branches = () => {
 
         // toggle the loader, if all request were successfull
         if (allRequestsSuccessful) {
-          toggleDashoardLoader(false);
+          setBranchLoader(false);
         }
       }
     }
@@ -124,53 +117,62 @@ const Branches = () => {
 
   return (
     <section className="relative">
+      {/* start metric skeleton loader section */}
+      {!branchesMetric && <MetricLoaderSection />}
+      {/* end metric skeleton loader section */}
+
       {/* start metrics */}
-      <Metrics metrics={branchesMetric} />
+      {branchesMetric && <Metrics metrics={branchesMetric} />}
       {/* end metrics */}
 
       {/* start branches header and body */}
       <section>
-        <div className="my-6 flex justify-between items-center w-full ">
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          className={`my-6 flex justify-between items-center w-full ${
+            !branches ? "invisible" : "visible"
+          }`}
+        >
           {/* left section */}
-          <h1 className="font-semibold">Branches</h1>
+          {/* search input */}
+          <div className="relative flex space-x-4">
+            <Input
+              type="text"
+              placeholder="Search"
+              className="rounded-md w-[15rem] pl-9 bg-nurseryColor border-black border-2 focus:border-none focus:ring-0 focus:outline-none"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchTerm}
+            />
 
-          {/* right section */}
-          <div className="flex justify-between sm:w-[35rem] sm:space-x-2 space-x-2 text-sm">
-            {/* search input */}
-            <div className="relative flex space-x-4">
-              <Input
-                type="text"
-                placeholder="Search"
-                className="rounded-md w-[15rem] pl-9 bg-nurseryColor border-black border-2 focus:border-none focus:ring-0 focus:outline-none"
-                onChange={(e) => setSearchTerm(e.target.value)}
-                value={searchTerm}
-              />
-
-              {/* search icon */}
-              <div
-                className={`absolute inset-y-0 left-0  py-2 focus:outline-none inline-flex items-center`}
-              >
-                {searchTerm.trim().length > 1 ? (
-                  <X
-                    className="h-4 w-4 text-[#a8a8a8] cursor-pointer"
-                    onClick={() => setSearchTerm("")}
-                  />
-                ) : (
-                  <Search className="h-4 w-4 text-[#a8a8a8]" />
-                )}
-              </div>
-
-              {/* search button */}
-              <Button
-                onClick={handleBranchSearch}
-                className={`${
-                  searchLoader ? "pointer-events-none" : "pointer-events-auto"
-                }`}
-              >
-                {searchLoader ? <Loader /> : <Search className="h-4 w-4 " />}
-              </Button>
+            {/* search icon */}
+            <div
+              className={`absolute inset-y-0 left-0  py-2 focus:outline-none inline-flex items-center`}
+            >
+              {searchTerm.trim().length > 1 ? (
+                <X
+                  className="h-4 w-4 text-[#a8a8a8] cursor-pointer"
+                  onClick={() => setSearchTerm("")}
+                />
+              ) : (
+                <Search className="h-4 w-4 text-[#a8a8a8]" />
+              )}
             </div>
 
+            {/* search button */}
+            <Button
+              onClick={handleBranchSearch}
+              className={`${
+                searchLoader ? "pointer-events-none" : "pointer-events-auto"
+              }`}
+            >
+              {searchLoader ? <Loader /> : <Search className="h-4 w-4 " />}
+            </Button>
+          </div>
+
+          {/* right section */}
+          <div className="flex  sm:space-x-2 space-x-2 text-sm">
             {/* sort by */}
             <div className="sm:block hidden">
               <DropdownMenu>
@@ -319,16 +321,34 @@ const Branches = () => {
               </DropdownMenu>
             </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* branches skeleton loder - cards */}
+        {branchLoader && (
+          <div className="grid sm:grid-cols-3 grid-cols-1 gap-5">
+            <BranchLoader />
+            <BranchLoader />
+            <BranchLoader />
+            <BranchLoader />
+            <BranchLoader />
+            <BranchLoader />
+            <BranchLoader />
+            <BranchLoader />
+            <BranchLoader />
+          </div>
+        )}
 
         {/* branches body - cards */}
-        <div className="grid sm:grid-cols-3 grid-cols-1 gap-5">
-          {branches?.map((branch, index) => (
-            <div key={index}>
-              <BranchCard branch={branch} />
-            </div>
-          ))}
-        </div>
+
+        {!branchLoader && (
+          <div className="grid sm:grid-cols-3 grid-cols-1 gap-5">
+            {branches?.map((branch, index) => (
+              <div key={index}>
+                <BranchCard branch={branch} />
+              </div>
+            ))}
+          </div>
+        )}
       </section>
       {/* end branches header and body */}
 
@@ -365,10 +385,6 @@ const Branches = () => {
         </div>
       )}
       {/* end notfound branches */}
-
-      {/* start dashboard loader */}
-      {dashboardLoader && <DashboardLoader />}
-      {/* end dashboard loader */}
     </section>
   );
 
@@ -377,40 +393,34 @@ const Branches = () => {
     // TODO: test the sort by created at to check if it working
 
     setSortByTitle(sortBy);
-    toggleDashoardLoader(true);
+    setBranchLoader(true);
     console.log(sortBy, "srting by");
     const response = await sortBranches(sortBy);
 
     if (response.success) {
-      toggleDashoardLoader(false);
+      setBranchLoader(false);
     } else {
-      toggleDashoardLoader(false);
+      setBranchLoader(false);
     }
   }
 
   // handle clear sorting for the branches
   async function handleClearSorting(sortBy) {
     setSortByTitle(sortBy);
-    toggleDashoardLoader(true);
+    clearSearchSort();
     console.log(sortBy, "srting by");
-    const response = await getBranches();
-
-    if (response.success) {
-      toggleDashoardLoader(false);
-    } else {
-      toggleDashoardLoader(false);
-    }
   }
 
   // handle searching the branches
   async function handleBranchSearch() {
-    // setIsFirstRender(2);
     isFirstRender.current = false;
     setSearchLoader(true);
+    setBranchLoader(true);
     console.log("searching for the term ", searchTerm);
     const response = await searchBranches(searchTerm);
 
     if (response.success) {
+      setBranchLoader(false);
       setSearchLoader(false);
     }
     console.log(response, "this is the response");

@@ -2,52 +2,61 @@ import { faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import MetricCard from "@/components/custom/MetricCard";
+import {
+  AlertTriangle,
+  PlugZap,
+  ServerCrash,
+  SmartphoneCharging,
+  UtilityPole,
+  Zap,
+} from "lucide-react";
 
 const Metrics = ({ metrics }) => {
+  console.log(metrics?.fault_arrow_direction, "halo");
   return (
     <section className="flex justify-between space-x-3 mt-6 w-[100%] overflow-x-auto ">
       {/* Total devices */}
       <MetricCard
-        icon={<FontAwesomeIcon icon={faUserGroup} />}
-        iconBg="bg-[#0F732B78]"
+        icon={<SmartphoneCharging className="w-5 h-5" />}
+        iconBg="bg-[#2cc75878]"
         title="Total Devices"
         value={metrics?.totalDevices}
         statistics={metrics?.devicePercentageIncrease}
-        statisticsBg="bg-[#FBB62D52]"
-        width="sm:flex-1 sm:min-w-0 min-w-[70%]"
+        statisticsBg="bg-[#CDFDC966]"
+        arrowDirection={metrics?.deviceArrowDirection}
       />
 
       {/* Faults */}
       <MetricCard
-        icon={<FontAwesomeIcon icon={faUserGroup} />}
-        iconBg="bg-[#f37fe4c2]"
+        icon={<AlertTriangle className="w-5 h-5" />}
+        iconBg="bg-[#f5626285]"
         title="Faults"
         value={metrics?.totalFaults}
         statistics={metrics?.faultPercentageIncrease}
         statisticsBg="bg-[#CDFDC966]"
-        width="sm:flex-1 sm:min-w-0 min-w-[70%]"
+        arrowDirection={metrics?.faultArrowDirection}
       />
 
       {/* Active Devices */}
       <MetricCard
-        icon={<FontAwesomeIcon icon={faUserGroup} />}
-        iconBg="bg-[#fbb62da6]"
+        icon={<PlugZap className="w-5 h-5" />}
+        iconBg="bg-[#2cc75878]"
         title="Active Devices"
         value={metrics?.totalActiveDevices}
         statistics={metrics?.activeDevicesPercentageIncrease}
         statisticsBg="bg-[#CDFDC966]"
-        width="sm:flex-1 sm:min-w-0 min-w-[70%]"
+        arrowDirection={metrics?.activeDeviceArrowDirection}
       />
 
       {/* Electricity Consumed */}
       <MetricCard
-        icon={<FontAwesomeIcon icon={faUserGroup} />}
-        iconBg="bg-[#FBB62D52]"
+        icon={<Zap className="w-5 h-5" />}
+        iconBg="bg-[#fbb62d75]"
         title="Electricity Consumed"
         value={metrics?.totalConsumption}
         statistics={metrics?.consumptionPercentageIncrease}
         statisticsBg="bg-[#CDFDC966]"
-        width="sm:min-w-0 min-w-[70%] sm:w-[18rem] 2xl:w-[30rem]"
+        arrowDirection={metrics?.consumptionArrowDirection}
       />
     </section>
   );

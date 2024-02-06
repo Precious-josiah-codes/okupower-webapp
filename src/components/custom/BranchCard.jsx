@@ -29,13 +29,33 @@ import { deleteBranch } from "@/store/Branch";
 import { toast } from "sonner";
 import { useState } from "react";
 import Loader from "./Loader";
+import { motion } from "framer-motion";
+import { sectionVariants } from "@/lib/framerVariants";
 
 const BranchCard = ({ branch }) => {
+  const router = useRouter();
   const [deleteLoader, setDeleteLoader] = useState(false);
   return (
-    <div className="bg-white hover:bg-[#FBB62D] text-[#515151]  flex-1 px-6 2xl:px-9 py-9 space-y-5 rounded-xl transition-all duration-75 delay-150 cursor-pointer">
-      <div className="flex justify-between w-full">
-        <h1 className="font-bold text-black">{branch?.name}</h1>
+    <motion.div
+      variants={sectionVariants}
+      initial="hidden"
+      animate="visible"
+      className="bg-white hover:bg-[#FBB62D] text-[#515151]  flex-1 px-6 2xl:px-9 py-9 space-y-5 rounded-xl transition-all duration-75 delay-150 cursor-pointer"
+      onClick={() => {
+        if (branch?.total_devices !== 0) {
+          router.push(`/branch/meters/${branch.id}?name=${branch?.name}`);
+        } else {
+          toast.info(`oooppppss.. there are are no devices in ${branch?.name}`);
+        }
+      }}
+    >
+      <div
+        className="flex justify-between w-full"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <h1 className="font-bold text-black capitalize">{branch?.name}</h1>
 
         <Popover>
           <PopoverTrigger>
@@ -119,7 +139,7 @@ const BranchCard = ({ branch }) => {
           <h1>{branch?.total_consumption}</h1>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   async function handleDeleteBranch(branchId) {

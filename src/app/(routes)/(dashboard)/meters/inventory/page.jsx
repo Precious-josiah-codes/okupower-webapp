@@ -39,7 +39,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
-import DeviceTable from "@/components/custom/tables/DeviceTable";
+import DeviceTable from "@/components/custom/tables/MeterTable";
 import { handleRouteAuthorization } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -55,32 +55,11 @@ import {
 } from "@/components/ui/command";
 import Loader from "@/components/custom/Loader";
 import { toast } from "sonner";
-
-// const branches = [
-//   {
-//     value: "next.js",
-//     label: "Next.js",
-//   },
-//   {
-//     value: "sveltekit",
-//     label: "SvelteKit",
-//   },
-//   {
-//     value: "nuxt.js",
-//     label: "Nuxt.js",
-//   },
-//   {
-//     value: "remix",
-//     label: "Remix",
-//   },
-//   {
-//     value: "astro",
-//     label: "Astro",
-//   },
-// ];
+import TableLoader from "@/components/custom/lazy loaders/TableLoader";
 
 const Devices = () => {
   const [inventories, setInventories] = useState(null);
+  const [defaultInventories, setDefaultInventories] = useState(null);
   const [bands, setBands] = useState(null);
   const [branches, setBranches] = useState(null);
   const [open, setOpen] = useState(false);
@@ -91,6 +70,9 @@ const Devices = () => {
   const [address, setAddress] = useState("");
   const [selectedDevices, setSelectedDevices] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [inventoryLoader, setInventoryLoader] = useState(true);
+  const [filterBy, setFilterBy] = useState("ALL_PHASE");
+
   const router = useRouter();
 
   useEffect(() => {
@@ -101,6 +83,7 @@ const Devices = () => {
     <section>
       {/* devices section */}
       <section>
+        {/* device header */}
         <div className="my-9 sm:flex justify-between items-center">
           {/* left section */}
           <div className="flex items-center space-x-6">
@@ -295,8 +278,39 @@ const Devices = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className={popoverStyle}>
-                  <h1 className={popoverDropdownStyle}>Resolved</h1>
-                  <h1 className={popoverDropdownStyle}>Unresolved</h1>
+                  <h1
+                    className={`${popoverDropdownStyle} flex space-x-3`}
+                    onClick={() => handleFilterDevice("ALL_PHASE")}
+                  >
+                    <span className="w-6">
+                      {filterBy === "ALL_PHASE" && (
+                        <Check className="h-5 w-5" />
+                      )}
+                    </span>
+                    <span className="ml-3"> All Phase</span>
+                  </h1>
+                  <h1
+                    className={`${popoverDropdownStyle} flex space-x-3`}
+                    onClick={() => handleFilterDevice("ONE_PHASE")}
+                  >
+                    <span className="w-6">
+                      {filterBy === "ONE_PHASE" && (
+                        <Check className="h-5 w-5" />
+                      )}
+                    </span>
+                    <span className="ml-3"> One Phase</span>
+                  </h1>
+                  <h1
+                    className={`${popoverDropdownStyle} flex space-x-3`}
+                    onClick={() => handleFilterDevice("THREE_PHASE")}
+                  >
+                    <span className="w-6">
+                      {filterBy === "THREE_PHASE" && (
+                        <Check className="h-5 w-5" />
+                      )}
+                    </span>
+                    <span className="ml-3"> Three Phase</span>
+                  </h1>
                 </PopoverContent>
               </Popover>
             </div>
@@ -363,11 +377,20 @@ const Devices = () => {
           </div>
         </div>
 
+        {/* meter skeleton loader */}
+        {inventoryLoader && (
+          <div>
+            <TableLoader />
+          </div>
+        )}
+
         {/* device table */}
-        <InventoryTable
-          inventories={inventories}
-          handleSelectedDeviceFn={handleSelectedDevice}
-        />
+        {!inventoryLoader && (
+          <InventoryTable
+            inventories={inventories}
+            handleSelectedDeviceFn={handleSelectedDevice}
+          />
+        )}
       </section>
 
       {/* start create devices modal */}
@@ -487,7 +510,10 @@ const Devices = () => {
 
       // console.log(data, status, "the devices");
       if (status === 200) {
+        setInventoryLoader(false);
         setInventories(data.results);
+        setDefaultInventories(data.results);
+
         console.log(data, "got inventories");
         //  return { msg: data.results, success: true };
       }
@@ -598,6 +624,45 @@ const Devices = () => {
 
       toast.error(error.msg);
       console.log(error, "this is the error");
+    }
+  }
+
+  async function handleFilterDevice(filter_by) {
+    setFilterBy(filter_by);
+
+    if (filter_by === "ALL_PHASE") {
+      setInventories(defaultInventories);
+    } else {
+      console.log(filter_by, "tfiler");
+      await filterDevice();
+    }
+  }
+
+  async function filterDevice(filter_by) {
+    setInventoryLoader(true);
+
+    try {
+      const { headers, accounts } = await handleRouteAuthorization();
+
+      // make request
+      const { data, status } = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/manage/devices/inventory/?account=${accounts[0]["id"]}&type=${filter_by}`,
+        {
+          headers: headers,
+        }
+      );
+
+      // console.log(data, status, "the devices");
+      if (status === 200) {
+        setInventories(data.results);
+        setInventoryLoader(false);
+
+        console.log(data, "got inventories");
+        //  return { msg: data.results, success: true };
+      }
+    } catch (error) {
+      console.log(error, "this is the error");
+      //  return { msg: "error.response.data.detail", success: false };
     }
   }
 };

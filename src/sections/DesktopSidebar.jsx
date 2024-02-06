@@ -57,13 +57,13 @@ const Sidebar = () => {
 
     {
       icon: <FontAwesomeIcon icon={faUsers} />,
-      link: "/devices/inventory",
+      link: "/meters/inventory",
       text: "Inventory",
     },
     {
       icon: <FontAwesomeIcon icon={faBook} />,
-      link: "/devices",
-      text: "Devices",
+      link: "/meters",
+      text: "Meters",
     },
 
     {
@@ -98,7 +98,7 @@ const Sidebar = () => {
       className={desktopSideBar}
       aria-label="Sidebar"
     >
-      <div className="h-full flex flex-col justify-between py-4 overflow-y-auto 2xl:py-[3.3rem] ">
+      <div className="h-full flex flex-col  py-4 overflow-y-auto 2xl:py-[3.3rem] ">
         {/* start logo/brand name */}
         <div className="h-[3rem] w-[6rem] relative mx-auto">
           <Image
@@ -114,11 +114,8 @@ const Sidebar = () => {
         {/* start page links */}
         <div
           className="space-y-4
-          h-[23rem] overflow-y-auto sidebar 2xl:h-auto 2xl:space-y-6 px-3"
+          h-fit sidebar 2xl:h-auto 2xl:space-y-6 px-3 mt-[5rem]"
         >
-          {/* Main text */}
-          <h1 className="pl-2 pt-6 text-gray-300">Main</h1>
-
           {/* other links */}
           {sideBarLinks.map((sideBarLink, index) => (
             <div key={index}>
@@ -153,92 +150,9 @@ const Sidebar = () => {
               </div>
             </div>
           ))}
-
-          {/* seperator */}
-          <div className="mt-[20rem]">
-            <Separator className="border border-secondaryColor" />
-          </div>
-
-          {/* Help text */}
-          <h1 className="pl-2 pt-6 text-gray-300">Help</h1>
-
-          {/* support link */}
-          <Link
-            href="/"
-            className={`${link} ${
-              activeLink === "/support" ? "bg-secondaryColor" : null
-            }`}
-          >
-            {/* icon */}
-            <div
-              className={`${
-                activeLink === "/support" ? "text-black" : "text-secondaryColor"
-              } group-hover:text-black text-lg w-3`}
-            >
-              <FontAwesomeIcon icon={faCircleQuestion} />
-            </div>
-            {/* text */}
-            <span
-              className={`${linkText} ${
-                activeLink === "/support" ? "text-black" : "text-white"
-              }`}
-            >
-              Support
-            </span>
-          </Link>
-
-          {/* settings link */}
-          <Link
-            href="/"
-            className={`${link} ${
-              activeLink === "/settings" ? "bg-secondaryColor" : null
-            }`}
-          >
-            {/* icon */}
-            <div
-              className={`${
-                activeLink === "/settings"
-                  ? "text-black"
-                  : "text-secondaryColor"
-              } group-hover:text-black text-lg w-3`}
-            >
-              <FontAwesomeIcon icon={faGear} />
-            </div>
-            {/* text */}
-            <span
-              className={`${linkText} ${
-                activeLink === "/settings" ? "text-black" : "text-white"
-              }`}
-            >
-              Settings
-            </span>
-          </Link>
         </div>
 
         {/* end page links */}
-
-        {/* profile section */}
-        <div className="px-3">
-          <div className="border-2 border-secondaryColor rounded-lg flex space-x-6 py-4 px-1">
-            {/* photo */}
-            <div className="h-[3rem] w-[3rem] rounded-full overflow-hidden relative">
-              <Image
-                className="object-cover w-full h-full"
-                src="https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                fill
-                alt=""
-                priority
-              />
-            </div>
-
-            {/* profile details */}
-            <div className="text-white text-sm">
-              <h1 className="text-base">Anthony Gideon</h1>
-              <h2>Manager</h2>
-              <h3 className="text-gray-200">hello@gmail.com</h3>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -83,7 +83,11 @@ import {
 import { useEffect, useRef, useState } from "react";
 import Loader from "@/components/custom/Loader";
 import { toast } from "sonner";
-
+import BandLoader from "@/components/custom/lazy loaders/BandLoader";
+import TableLoader from "@/components/custom/lazy loaders/TableLoader";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { sectionVariants } from "@/lib/framerVariants";
 const invoices = [
   {
     invoice: "INV001",
@@ -187,9 +191,14 @@ function Bands() {
   const [sortBy, setSortBy] = useState("-created_at");
   const isFirstRender = useRef(true);
   const [loader, setLoader] = useState(false);
+  const [bandMeterLoader, setBandMeterLoader] = useState(true);
+  const [notFoundLoader, setNotFoundLoader] = useState(false);
+  const [notFoundStatus, setNotFoundStatus] = useState("");
 
   useEffect(() => {
-    handleGetBandMetric();
+    if (!bandMetric) {
+      handleGetBandMetric();
+    }
   }, []);
 
   useEffect(() => {
@@ -206,108 +215,73 @@ function Bands() {
     }
   }, [searchTerm]);
 
-  if (!bandDevices) {
-    return <div>loading.... </div>;
-  }
-
   return (
     <section className="relative text-sm">
+      {/* band metric skeleton loader */}
+      {!bandMetric && (
+        <div className="grid grid-cols-3 gap-x-5 mt-6">
+          <BandLoader />
+          <BandLoader />
+          <BandLoader />
+        </div>
+      )}
+
       {/* start metrics */}
-      <div className="mt-6">
-        <Carousel
-          opts={{
-            align: "start",
-          }}
-          className="w-full"
+      {bandMetric && (
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-6"
         >
-          <CarouselContent>
-            {bandMetric.map((metric, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                <BandCard
-                  metric={metric}
-                  handleBandFilter={handleBandFilter}
-                  activeBand={activeBand}
-                />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="-left-4 top-[10rem] bg-[#0f732b21]" />
-          <CarouselNext className="-right-4 top-[10rem] bg-[#0f732b21]" />
-        </Carousel>
-      </div>
+          <Carousel
+            opts={{
+              align: "start",
+            }}
+            className="w-full"
+          >
+            <CarouselContent>
+              {bandMetric?.map((metric, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <BandCard
+                    metric={metric}
+                    handleBandFilter={handleBandFilter}
+                    activeBand={activeBand}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {/* <CarouselPrevious className="-left-4 top-[10rem] bg-[#0f732b21]" />
+          <CarouselNext className="-right-4 top-[10rem] bg-[#0f732b21]" /> */}
+          </Carousel>
+        </motion.div>
+      )}
       {/* end metrics */}
 
-      {/* start bands */}
       {/* band header */}
-      <div className="sm:flex justify-between items-center py-9">
-        {/* left section */}
+      <motion.div
+        variants={sectionVariants}
+        initial="hidden"
+        animate="visible"
+        className={`py-9 space-y-5 ${bandDevices ? "visible" : "invisible"}`}
+      >
         <div>
-          <h1 className="font-semibold text-lg">Band A</h1>
-          <h1>See all available devices In each Band A</h1>
+          <h1 className="font-semibold text-lg">Band {activeBand?.name}</h1>
+          <h1>See all available devices In each Band {activeBand?.name}</h1>
         </div>
-
-        {/* right section  */}
-        <div className="flex sm:w-[38.8rem] items-center w-full mt-4 sm:mt-0 space-x-6  text-sm">
-          {/* total faults */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex space-x-4">
-                  <AlertTriangle />
-                  <h1>{activeBand?.total_faults}</h1>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Total Faults</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          {/* total consumption */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex space-x-4">
-                  <Activity />
-                  <h1>{activeBand?.total_consumption}</h1>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Total Consumption</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          {/* give bonus to all bands */}
-          <div className="cursor-pointer">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <GiveBonusModal
-                    content={
-                      <div className="animate-bounce delay-500">
-                        <Gift />
-                      </div>
-                    }
-                    bonusType="bands"
-                    devices={null}
-                    bands={bandMetric}
-                    activeBand={null}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Give bonus to all bands</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-
-          {/* search input */}
-          <div className="relative flex space-x-4">
+        <div className={"sm:flex justify-between items-center"}>
+          {/* left section ->  search input  */}
+          <div
+            className={`relative flex space-x-4 ${
+              activeBand?.total_devices === 0
+                ? "pointer-events-none"
+                : "pointer-events-auto"
+            }`}
+          >
             <Input
               type="text"
               placeholder="Search"
-              className="rounded-md w-[15rem] pl-9 bg-nurseryColor border-black border-2 focus:ring-0  focus-visible:ring-0 focus-visible:ring-offset-0"
+              className={`rounded-md w-[15rem] pl-9 bg-nurseryColor border-black border-2 focus:ring-0  focus-visible:ring-0 focus-visible:ring-offset-0 `}
               onChange={(e) => setSearchTerm(e.target.value)}
               value={searchTerm}
             />
@@ -330,247 +304,365 @@ function Bands() {
             <Button
               onClick={handleSearchDevice}
               className={`${
-                searchLoader ? "pointer-events-none" : "pointer-events-auto"
+                searchLoader || activeBand?.total_devices === 0
+                  ? "pointer-events-none"
+                  : "pointer-events-auto"
               }`}
             >
               {searchLoader ? <Loader /> : <Search className="h-4 w-4 " />}
             </Button>
           </div>
 
-          {/* sort by */}
-          <div className="sm:block hidden">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="text-sm bg-transparent border-2 border-black px-2 space-x-2 w-[6rem] focus-visible:outline-none"
-                >
-                  <h1>Sort By</h1>
-                  <span className={`text-sm text-black group-hover:text-black`}>
-                    <FontAwesomeIcon icon={faChevronDown} />
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuGroup>
-                  {/* clear filter */}
-                  <DropdownMenuItem
-                    onClick={() => handleClearSorting("-created_at")}
+          {/* right section -> faults, consumption, give bonus, sortby */}
+          <div className="flex sm:w-fit items-center w-full mt-4 sm:mt-0 space-x-6  text-sm ">
+            {/* total faults */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex space-x-4">
+                    <AlertTriangle />
+                    <h1>{activeBand?.total_faults}</h1>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total Faults</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {/* total consumption */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex space-x-4">
+                    <Activity />
+                    <h1>{activeBand?.total_consumption}</h1>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total Consumption</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {/* give bonus to all bands */}
+            <div
+              className={`cursor-pointer ${
+                activeBand?.total_devices === 0
+                  ? "pointer-events-none"
+                  : "pointer-events-auto"
+              }`}
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <GiveBonusModal
+                      content={
+                        <div className="animate-bounce delay-500">
+                          <Gift />
+                        </div>
+                      }
+                      bonusType="bands"
+                      devices={null}
+                      bands={bandMetric}
+                      activeBand={null}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Give bonus to all bands</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* sort by */}
+            <div
+              className={`sm:block hidden ${
+                activeBand?.total_devices === 0
+                  ? "pointer-events-none"
+                  : "pointer-events-auto"
+              }`}
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="text-sm bg-transparent border-2 border-black px-2 space-x-2 w-[6rem] focus-visible:outline-none"
                   >
-                    <span className="w-6">
-                      <FilterX className="w-5 h-5" />
+                    <h1>Sort By</h1>
+                    <span
+                      className={`text-sm text-black group-hover:text-black`}
+                    >
+                      <FontAwesomeIcon icon={faChevronDown} />
                     </span>
-                    <span className="ml-3">Clear Filter</span>
-                  </DropdownMenuItem>
-
-                  {/* user name */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuGroup>
+                    {/* clear sorting */}
+                    <DropdownMenuItem
+                      onClick={() => handleClearSorting("-created_at")}
+                    >
                       <span className="w-6">
-                        {sortBy.includes("name") && (
-                          <Check className="h-5 w-5" />
-                        )}
+                        <FilterX className="w-5 h-5" />
                       </span>
-                      <span className="ml-3"> User Name</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleSorting(activeBand?.id, "name", "user__name")
-                          }
-                        >
-                          <span className="w-6">
-                            {sortBy === "name" && <Check className="h-5 w-5" />}
-                          </span>
-                          <span className="ml-3">(A-Z) Ascending</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleSorting(
-                              activeBand?.id,
-                              "-name",
-                              "-user__name"
-                            )
-                          }
-                        >
-                          <span className="w-6">
-                            {sortBy === "-name" && (
-                              <Check className="h-5 w-5" />
-                            )}
-                          </span>
-                          <span className="ml-3">(Z-A) Descending</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+                      <span className="ml-3">Clear Filter</span>
+                    </DropdownMenuItem>
 
-                  {/* address */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <span className="w-6">
-                        {sortBy.includes("address") && (
-                          <Check className="h-5 w-5" />
-                        )}
-                      </span>
-                      <span className="ml-3"> User Address</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleSorting(
-                              activeBand?.id,
-                              "address",
-                              "user__address"
-                            )
-                          }
-                        >
-                          <span className="w-6">
-                            {sortBy === "address" && (
-                              <Check className="h-5 w-5" />
-                            )}
-                          </span>
-                          <span className="ml-3">(A-Z) Ascending</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleSorting(
-                              activeBand?.id,
-                              "-address",
-                              "-user__address"
-                            )
-                          }
-                        >
-                          <span className="w-6">
-                            {sortBy === "-address" && (
-                              <Check className="h-5 w-5" />
-                            )}
-                          </span>
-                          <span className="ml-3">(Z-A) Descending</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+                    {/* user name */}
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <span className="w-6">
+                          {sortBy.includes("name") && (
+                            <Check className="h-5 w-5" />
+                          )}
+                        </span>
+                        <span className="ml-3"> User Name</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSorting(
+                                activeBand?.id,
+                                "name",
+                                "user__name"
+                              )
+                            }
+                          >
+                            <span className="w-6">
+                              {sortBy === "name" && (
+                                <Check className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="ml-3">(A-Z) Ascending</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSorting(
+                                activeBand?.id,
+                                "-name",
+                                "-user__name"
+                              )
+                            }
+                          >
+                            <span className="w-6">
+                              {sortBy === "-name" && (
+                                <Check className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="ml-3">(Z-A) Descending</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
 
-                  {/* created at */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <span className="w-6">
-                        {sortBy.includes("created_at") && (
-                          <Check className="h-5 w-5" />
-                        )}
-                      </span>
-                      <span className="ml-3">Date Created</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleSorting(
-                              activeBand?.id,
-                              "created_at",
-                              "created_at"
-                            )
-                          }
-                        >
-                          <span className="w-6">
-                            {sortBy === "created_at" && (
-                              <Check className="h-5 w-5" />
-                            )}
-                          </span>
-                          <span className="ml-3">Ascending</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleSorting(
-                              activeBand?.id,
-                              "-created_at",
-                              "-created_at"
-                            )
-                          }
-                        >
-                          <span className="w-6">
-                            {sortBy === "-created_at" && (
-                              <Check className="h-5 w-5" />
-                            )}
-                          </span>
-                          <span className="ml-3">Descending</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                    {/* address */}
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <span className="w-6">
+                          {sortBy.includes("address") && (
+                            <Check className="h-5 w-5" />
+                          )}
+                        </span>
+                        <span className="ml-3"> User Address</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSorting(
+                                activeBand?.id,
+                                "address",
+                                "user__address"
+                              )
+                            }
+                          >
+                            <span className="w-6">
+                              {sortBy === "address" && (
+                                <Check className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="ml-3">(A-Z) Ascending</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSorting(
+                                activeBand?.id,
+                                "-address",
+                                "-user__address"
+                              )
+                            }
+                          >
+                            <span className="w-6">
+                              {sortBy === "-address" && (
+                                <Check className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="ml-3">(Z-A) Descending</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
 
-          {/* more options */}
-          <div className="sm:hidden flex">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button>
-                  <FontAwesomeIcon icon={faEllipsisV} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="sm:w-56 w-[10rem]">
-                <DropdownMenuLabel>More Options</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                    {/* created at */}
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <span className="w-6">
+                          {sortBy.includes("created_at") && (
+                            <Check className="h-5 w-5" />
+                          )}
+                        </span>
+                        <span className="ml-3">Date Created</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSorting(
+                                activeBand?.id,
+                                "created_at",
+                                "created_at"
+                              )
+                            }
+                          >
+                            <span className="w-6">
+                              {sortBy === "created_at" && (
+                                <Check className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="ml-3">Ascending</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleSorting(
+                                activeBand?.id,
+                                "-created_at",
+                                "-created_at"
+                              )
+                            }
+                          >
+                            <span className="w-6">
+                              {sortBy === "-created_at" && (
+                                <Check className="h-5 w-5" />
+                              )}
+                            </span>
+                            <span className="ml-3">Descending</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-                {/* Filter by, Sort by, select band */}
-                <DropdownMenuGroup>
-                  {/* Filter by */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Filter By</DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem>Resolved</DropdownMenuItem>
-                        <DropdownMenuItem>Unresolved</DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+            {/* more options */}
+            <div className="sm:hidden flex">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button>
+                    <FontAwesomeIcon icon={faEllipsisV} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="sm:w-56 w-[10rem]">
+                  <DropdownMenuLabel>More Options</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
 
-                  {/* Sort by */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Sort By</DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem>Resolved</DropdownMenuItem>
-                        <DropdownMenuItem>Unresolved</DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+                  {/* Filter by, Sort by, select band */}
+                  <DropdownMenuGroup>
+                    {/* Filter by */}
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>Filter By</DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem>Resolved</DropdownMenuItem>
+                          <DropdownMenuItem>Unresolved</DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
 
-                  {/* Select band */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Select Band</DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem>Band A</DropdownMenuItem>
-                        <DropdownMenuItem>Band B</DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    {/* Sort by */}
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>Sort By</DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem>Resolved</DropdownMenuItem>
+                          <DropdownMenuItem>Unresolved</DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+
+                    {/* Select band */}
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        Select Band
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem>Band A</DropdownMenuItem>
+                          <DropdownMenuItem>Band B</DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* band table skeleton loader */}
+      {bandMeterLoader && (
+        <div>
+          <TableLoader />
+        </div>
+      )}
+
+      {/* not found meters */}
+      {notFoundLoader && (
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex justify-center w-full relative"
+        >
+          <div className="relative h-[18rem] w-[18rem] text-xs rounded-lg overflow-hidden">
+            <Image
+              src="/notfound.png"
+              alt="not found image"
+              fill
+              sizes="100vw"
+              style={{
+                objectFit: "cover",
+              }}
+              priority
+            />
+          </div>
+          <h1 className="absolute bottom-6">{notFoundStatus}</h1>
+        </motion.div>
+      )}
 
       {/* band tables */}
-      <BandTable
-        bandDevices={bandDevices}
-        bandMetric={bandMetric}
-        loader={loader}
-        handleDeleteDevice={handleDeleteDevice}
-        handleDeleteAllDevice={handleDeleteAllDevice}
-        activeBand={activeBand}
-        handleMovingDeviceFromBand={handleMovingDeviceFromBand}
-      />
-
-      {/* end bands */}
+      {!bandMeterLoader && bandDevices?.length > 0 && (
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <BandTable
+            bandDevices={bandDevices}
+            bandMetric={bandMetric}
+            loader={loader}
+            handleDeleteDevice={handleDeleteDevice}
+            handleDeleteAllDevice={handleDeleteAllDevice}
+            activeBand={activeBand}
+            handleMovingDeviceFromBand={handleMovingDeviceFromBand}
+          />
+        </motion.div>
+      )}
 
       {/* start create band modal */}
       <Dialog className="bg-black/80">
@@ -630,20 +722,30 @@ function Bands() {
     const { msg, success } = await getBandMetrics();
 
     if (success) {
-      handleGetBandDevices(msg[0]["id"]);
+      handleGetBandDevices(msg[0]["id"], msg[0]["name"]);
       setBandMetric(msg);
       setActiveBand(msg[0]);
       const bandName = msg.map((band) => band.name);
-      console.log(bandName, "all the bands");
+      console.log(activeBand, msg[0], "all the bands");
     }
   }
 
   // handle getting the band devices
-  async function handleGetBandDevices(id) {
+  async function handleGetBandDevices(id, bandName) {
+    console.log(activeBand, "all the bands000");
+    if (!bandMeterLoader) setBandMeterLoader(true);
+    if (notFoundLoader) setNotFoundLoader(false);
+
     const { msg, success } = await getBandDevices(id);
 
     if (success) {
+      setBandMeterLoader(false);
+      if (msg.length === 0) {
+        setNotFoundLoader(true);
+        setNotFoundStatus(`There are no meters in  band ${bandName}`);
+      }
       setBandDevices(msg);
+      console.log(activeBand, "the meters check");
       setDefaultBandDevices(msg);
     }
 
@@ -678,15 +780,18 @@ function Bands() {
   }
 
   // handle band filter
-  function handleBandFilter(metric) {
+  function handleBandFilter(metric, bandName) {
     setActiveBand(metric);
-    handleGetBandDevices(metric.id);
+    handleGetBandDevices(metric.id, bandName);
     console.log(metric, "the m  etric");
   }
 
   // handle search device in a band
   async function handleSearchDevice() {
     isFirstRender.current = false;
+    if (!bandMeterLoader) setBandMeterLoader(true);
+    if (notFoundLoader) setNotFoundLoader(false);
+
     setSearchLoader(true);
 
     // make request to search
@@ -696,6 +801,11 @@ function Bands() {
     if (success) {
       setBandDevices(msg);
       setSearchLoader(false);
+      setBandMeterLoader(false);
+      if (msg.length === 0) {
+        setNotFoundLoader(true);
+        setNotFoundStatus(`ooppss couldn't find the meter your looking for`);
+      }
     }
   }
 
@@ -703,15 +813,19 @@ function Bands() {
   function clearSearch() {
     // restore the default devices
     setBandDevices(defaultBandDevices);
+    setNotFoundLoader(false);
   }
 
   // handle sorting
   async function handleSorting(bandId, sortName, sortBy) {
     setSortBy(sortName);
+    if (!bandMeterLoader) setBandMeterLoader(true);
+
     const { msg, success } = await sortBandDevices(bandId, sortBy);
 
     if (success) {
       setBandDevices(msg);
+      setBandMeterLoader(false);
     } else {
     }
   }

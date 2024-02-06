@@ -57,7 +57,7 @@ const GiveBonusModal = ({ content, bonusType, devices, bands, activeBand }) => {
               <div>
                 <Label>Select Bands</Label>
                 <div className="grid grid-cols-4 gap-y-4 mt-3">
-                  {bands.map((band, index) => (
+                  {bands?.map((band, index) => (
                     <div className="flex items-center space-x-2" key={index}>
                       <Checkbox
                         id={band.id}

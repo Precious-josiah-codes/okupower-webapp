@@ -29,6 +29,7 @@ import ConfirmDelete from "../ConfirmDelete";
 import { useState } from "react";
 import Loader from "../Loader";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const dropDownItemStyle =
   "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-slate-100 focus:bg-slate-100 focus:text-slate-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-slate-800 dark:focus:text-slate-50";
@@ -44,6 +45,7 @@ const BandTable = ({
 }) => {
   const [selectedDevices, setSelectedDevices] = useState([]);
   const [activeMoveBand, setActiveMoveBand] = useState(null);
+  const router = useRouter();
 
   console.log(bandDevices, "activeMoveBand");
   return (
@@ -63,7 +65,7 @@ const BandTable = ({
                   {/* give bonus */}
                   <div
                     className={` ${dropDownItemStyle} ${
-                      selectedDevices.length === 0
+                      selectedDevices?.length === 0
                         ? "text-slate-500 pointer-events-none"
                         : "text-black pointer-events-auto"
                     }`}
@@ -80,7 +82,7 @@ const BandTable = ({
                   {/* delete all devices*/}
                   <div
                     className={` ${dropDownItemStyle} ${
-                      bandDevices.length === 0
+                      bandDevices?.length === 0
                         ? "text-slate-500 pointer-events-none"
                         : "text-black pointer-events-auto"
                     } `}
@@ -199,27 +201,26 @@ const BandTable = ({
           </div>
 
           {/* body */}
-          {bandDevices?.map((device, index) => (
+          {bandDevices?.map((meter, index) => (
             <div
               className="grid grid-cols-4 bg-[#cfcfcf42] py-6 mb-3 rounded-[16px] hover:bg-[#0553321e] cursor-pointer text-[#51515] font-normal transition-all w-[50rem] sm:w-full px-6"
               key={index}
+              onClick={() => router.push(`/meter/${meter.id}`)}
             >
-              {/* device */}
+              {/* meter */}
               <div className="flex items-center space-x-9">
-                <Checkbox
-                  onCheckedChange={() => handleSelectedDevice(device)}
-                />
-                <h1>{device?.serial_no}</h1>
+                <Checkbox onCheckedChange={() => handleSelectedDevice(meter)} />
+                <h1>{meter?.serial_no}</h1>
               </div>
 
               {/* type */}
-              <div className="font-medium">{device?.user_address}</div>
+              <div className="font-medium">{meter?.user_address}</div>
 
               {/* username */}
-              <div>{device?.user_name}</div>
+              <div>{meter?.user_name}</div>
 
               {/* phone no */}
-              <div>{device?.user_phone_no}</div>
+              <div>{meter?.user_phone_no}</div>
             </div>
           ))}
         </div>

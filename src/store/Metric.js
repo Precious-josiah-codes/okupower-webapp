@@ -19,7 +19,6 @@ export const getBranchesMetric = async () => {
     );
 
     if (response.status === 200) {
-      console.log(response, "resp");
       useMetricStore.setState({
         branchesMetric: {
           totalDevices: response.data.total_devices,
@@ -33,6 +32,10 @@ export const getBranchesMetric = async () => {
           consumptionPercentageIncrease:
             response.data.consumption_percentage_increase,
           deviceArrowDirection: response.data.device_arrow_direction,
+          faultArrowDirection: response.data.fault_arrow_direction,
+          activeDeviceArrowDirection:
+            response.data.active_devices_arrow_direction,
+          consumptionArrowDirection: response.data.consumption_arrow_direction,
         },
       });
       return true;

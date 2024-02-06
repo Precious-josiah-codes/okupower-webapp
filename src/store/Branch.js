@@ -142,8 +142,8 @@ export const searchBranches = async (searchTerm) => {
   }
 };
 
-// clear search and filter
-export const clearSearchFilter = () => {
+// clear search and sroting
+export const clearSearchSort = () => {
   const defaultBranches = useBranchStore.getState().defaultBranchData;
   useBranchStore.setState({ branches: defaultBranches });
 };

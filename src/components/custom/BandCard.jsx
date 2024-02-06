@@ -30,6 +30,7 @@ import ConfirmDelete from "./ConfirmDelete";
 import { toast } from "sonner";
 import { editBand } from "@/store/Band";
 import GiveBonusModal from "./GiveBonusModal";
+import { CircuitBoard } from "lucide-react";
 
 const BandCard = ({ metric, handleBandFilter, activeBand }) => {
   const [loader, setLoader] = useState(false);
@@ -40,15 +41,19 @@ const BandCard = ({ metric, handleBandFilter, activeBand }) => {
       className={`${
         activeBand.id === metric.id ? "bg-yellow-500" : "bg-white"
       }  sm:flex-1 sm:min-w-0 min-w-[80%] h-[14rem] p-[1rem] space-y-12 rounded-xl flex flex-col justify-center cursor-pointer`}
-      onClick={() => handleBandFilter(metric)}
+      onClick={() => handleBandFilter(metric, activeBand?.name)}
     >
       <div>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div
-              className={`py-[0.79rem] px-4 bg-[#FBB62D52] rounded-md inline-flex justify-center items-center`}
+              className={`py-[0.79rem] px-4 ${
+                activeBand.id === metric.id
+                  ? "bg-[#e5e7e552]"
+                  : "bg-[#FBB62D52]"
+              }  rounded-md inline-flex justify-center items-center`}
             >
-              <FontAwesomeIcon icon={faSnowflake} className="h-4 w-4" />
+              <CircuitBoard className="h-4 w-4" />
             </div>
 
             <h1 className=" font-semibold">

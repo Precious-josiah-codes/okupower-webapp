@@ -29,14 +29,21 @@ import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { handleRouteAuthorization } from "@/lib/auth";
 import axios from "axios";
+import TableLoader from "@/components/custom/lazy loaders/TableLoader";
+import Image from "next/image";
+import { sectionVariants } from "@/lib/framerVariants";
+import { motion } from "framer-motion";
 
 const Transaction = () => {
   const [defaultTransactions, setDefaultTransactions] = useState(null);
   const [transactions, setTransactions] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
+  const [transactionLoader, setTransactionLoader] = useState(false);
   const [sortBy, setSortBy] = useState("-created_at");
   const isFirstRender = useRef(true);
+
+  const [notFoundLoader, setNotFoundLoader] = useState(false);
 
   useEffect(() => {
     handleGetTransaction();
@@ -57,50 +64,51 @@ const Transaction = () => {
 
   return (
     <section>
-      <div className="sm:flex justify-between items-center py-9">
+      <h1 className="mt-9">View all transaction</h1>
+      <div
+        className={`sm:flex justify-between items-center mt-4 mb-9 ${
+          transactions ? "visible" : "invisible"
+        }`}
+      >
         {/* left section */}
-        <div>
-          <h1 className="font-semibold text-lg">Band A</h1>
-          <h1>See all available devices In each Band A</h1>
+
+        {/* search input */}
+        <div className="relative flex space-x-4">
+          <Input
+            type="text"
+            placeholder="Search by username"
+            className="rounded-md w-[15rem] pl-9 bg-nurseryColor border-black border-2 focus:ring-0  focus-visible:ring-0 focus-visible:ring-offset-0"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+          />
+
+          {/* search icon */}
+          <div
+            className={`absolute inset-y-0 left-0  py-2 focus:outline-none inline-flex items-center`}
+          >
+            {searchTerm.trim().length > 1 ? (
+              <X
+                className="h-4 w-4 text-[#a8a8a8] cursor-pointer"
+                onClick={() => setSearchTerm("")}
+              />
+            ) : (
+              <Search className="h-4 w-4 text-[#a8a8a8]" />
+            )}
+          </div>
+
+          {/* search button */}
+          <Button
+            onClick={handleSearch}
+            className={`${
+              searchLoader ? "pointer-events-none" : "pointer-events-auto"
+            }`}
+          >
+            {searchLoader ? <Loader /> : <Search className="h-4 w-4 " />}
+          </Button>
         </div>
 
         {/* right section  */}
-        <div className="flex sm:w-[38.8rem] items-center w-full mt-4 sm:mt-0 space-x-6  text-sm">
-          {/* search input */}
-          <div className="relative flex space-x-4">
-            <Input
-              type="text"
-              placeholder="Search by username"
-              className="rounded-md w-[15rem] pl-9 bg-nurseryColor border-black border-2 focus:ring-0  focus-visible:ring-0 focus-visible:ring-offset-0"
-              onChange={(e) => setSearchTerm(e.target.value)}
-              value={searchTerm}
-            />
-
-            {/* search icon */}
-            <div
-              className={`absolute inset-y-0 left-0  py-2 focus:outline-none inline-flex items-center`}
-            >
-              {searchTerm.trim().length > 1 ? (
-                <X
-                  className="h-4 w-4 text-[#a8a8a8] cursor-pointer"
-                  onClick={() => setSearchTerm("")}
-                />
-              ) : (
-                <Search className="h-4 w-4 text-[#a8a8a8]" />
-              )}
-            </div>
-
-            {/* search button */}
-            <Button
-              onClick={handleSearch}
-              className={`${
-                searchLoader ? "pointer-events-none" : "pointer-events-auto"
-              }`}
-            >
-              {searchLoader ? <Loader /> : <Search className="h-4 w-4 " />}
-            </Button>
-          </div>
-
+        <div className="flex sm:w-fit items-center w-full mt-4 sm:mt-0 space-x-6  text-sm">
           {/* sort by */}
           <div className="sm:block hidden">
             <DropdownMenu>
@@ -273,17 +281,49 @@ const Transaction = () => {
           </div>
         </div>
       </div>
-      {/* table */}
 
-      <div>
-        <TransactionTable transactions={transactions} />
-      </div>
+      {/* transaction table  skeleton loader */}
+      {transactionLoader && <TableLoader />}
+
+      {/* not found meters */}
+      {notFoundLoader && (
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex justify-center w-full relative"
+        >
+          <div className="relative h-[18rem] w-[18rem] text-xs rounded-lg overflow-hidden">
+            <Image
+              src="/notfound.png"
+              alt="not found image"
+              fill
+              sizes="100vw"
+              style={{
+                objectFit: "cover",
+              }}
+              priority
+            />
+          </div>
+          <h1 className="absolute bottom-6">
+            Couldn't find transaction for {searchTerm}
+          </h1>
+        </motion.div>
+      )}
+
+      {/* table */}
+      {!transactionLoader && transactions?.length > 0 && (
+        <div>
+          <TransactionTable transactions={transactions} />
+        </div>
+      )}
     </section>
   );
 
   // handle sorting
   async function handleSorting(sortName, sortBy) {
     console.log(sortBy, "sortedby");
+    if (!transactionLoader) setTransactionLoader(true);
     setSortBy(sortName);
     try {
       const { headers, accounts } = await handleRouteAuthorization();
@@ -297,6 +337,7 @@ const Transaction = () => {
       );
 
       if (status === 200) {
+        setTransactionLoader(false);
         setTransactions(data.results);
         console.log(data.results, "the devices");
         // return { msg: data.results, success: true };
@@ -309,6 +350,7 @@ const Transaction = () => {
 
   // handle getting the transactions
   async function handleGetTransaction() {
+    if (!transactionLoader) setTransactionLoader(true);
     try {
       const { headers, accounts } = await handleRouteAuthorization();
       // make request
@@ -323,6 +365,7 @@ const Transaction = () => {
       if (status === 200) {
         setTransactions(data.results);
         setDefaultTransactions(data.results);
+        setTransactionLoader(false);
         console.log(data, "the devices");
         //  return { msg: data.results, success: true };
       }
@@ -340,6 +383,9 @@ const Transaction = () => {
 
   // handle searching transactions
   async function handleSearch() {
+    if (!transactionLoader) setTransactionLoader(true);
+    if (notFoundLoader) setNotFoundLoader(false);
+
     isFirstRender.current = false;
     setSearchLoader(true);
     try {
@@ -352,10 +398,16 @@ const Transaction = () => {
           headers: headers,
         }
       );
+      console.log(data.results, status, searchTerm, "the results");
 
       if (status === 200) {
+        setTransactionLoader(false);
         setSearchLoader(false);
         setTransactions(data.results);
+
+        if (data.results.length === 0) {
+          setNotFoundLoader(true);
+        }
       }
     } catch (error) {
       setSearchLoader(false);
@@ -368,6 +420,7 @@ const Transaction = () => {
   function clearSearch() {
     // restore the default devices
     setTransactions(defaultTransactions);
+    setNotFoundLoader(false);
   }
 };
 
