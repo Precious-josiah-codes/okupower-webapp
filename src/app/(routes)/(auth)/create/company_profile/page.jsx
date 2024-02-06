@@ -1,5 +1,6 @@
 "use client";
 
+import Alerts from "@/components/custom/Alerts";
 import Loader from "@/components/custom/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
