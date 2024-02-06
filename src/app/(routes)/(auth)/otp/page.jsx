@@ -10,9 +10,11 @@ import { useEffect, useRef, useState } from "react";
 
 const Otp = () => {
   const [isError, setIsError] = useState(false);
-  const inputRefs = Array(6)
-    .fill()
-    .map((_, index) => useRef(null));
+  const inputRefs = useRef(
+    Array(6)
+      .fill()
+      .map((_, index))
+  );
 
   const [authLoader, error] = useAccountStore((state) => [
     state.authLoader,
