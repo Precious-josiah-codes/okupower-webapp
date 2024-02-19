@@ -13,7 +13,7 @@ const MetricCard = ({
   statisticsBg,
   arrowDirection,
 }) => {
-  console.log(arrowDirection, "hams");
+  console.log(statistics?.toFixed(2), arrowDirection, "hams");
   return (
     <motion.div
       variants={sectionVariants}

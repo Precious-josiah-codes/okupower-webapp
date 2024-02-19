@@ -105,7 +105,6 @@ const Devices = () => {
         >
           {/* left section */}
           <div>
-
             {/* seach input */}
             <div className="relative sm:flex hidden space-x-4">
               <Input
@@ -640,6 +639,10 @@ const Devices = () => {
           consumptionPercentageIncrease:
             response.data.consumption_percentage_increase,
           deviceArrowDirection: response.data.device_arrow_direction,
+          activeDeviceArrowDirection:
+            response.data.active_devices_arrow_direction,
+          faultArrowDirection: response.data.fault_arrow_direction,
+          consumptionArrowDirection: response.data.consumption_arrow_direction,
         });
       }
     } catch (error) {

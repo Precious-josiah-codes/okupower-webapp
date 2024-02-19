@@ -76,7 +76,11 @@ const Devices = () => {
   const router = useRouter();
 
   useEffect(() => {
-    handleAllRequest();
+    if (!inventories) {
+      handleAllRequest();
+    } else {
+      console.log("inventory on point");
+    }
   }, []);
 
   return (

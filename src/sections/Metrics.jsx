@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 const Metrics = ({ metrics }) => {
-  console.log(metrics?.fault_arrow_direction, "halo");
+  console.log(metrics, "halo james");
   return (
     <section className="flex justify-between space-x-3 mt-6 w-[100%] overflow-x-auto ">
       {/* Total devices */}

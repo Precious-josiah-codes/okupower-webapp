@@ -40,6 +40,8 @@ const MeterTable = ({ meters }) => {
     THREE_PHASE: "Three Phase",
   };
 
+  console.log(meters, "na the meter o boy");
+
   return (
     <section>
       <section className="bg-white py-4 rounded-xl text-sm">
@@ -47,7 +49,7 @@ const MeterTable = ({ meters }) => {
         <div className="sm:block hidden px-[52px] ">
           <div className="grid grid-cols-5 py-5 font-bold">
             <div>Meter NO</div>
-            <div>Username</div>
+            <div>Used By</div>
             <div>Address</div>
             <div>Meter Type</div>
             <div>Status</div>

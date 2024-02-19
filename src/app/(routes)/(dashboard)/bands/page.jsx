@@ -196,6 +196,7 @@ function Bands() {
   const [notFoundStatus, setNotFoundStatus] = useState("");
 
   useEffect(() => {
+    console.log("i ran");
     if (!bandMetric) {
       handleGetBandMetric();
     }

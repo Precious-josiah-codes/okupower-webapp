@@ -422,6 +422,29 @@ const Transaction = () => {
     setTransactions(defaultTransactions);
     setNotFoundLoader(false);
   }
+
+  // download transaction history
+  async function handleDownloadTransactionHistory(id) {
+    try {
+      const { headers, accounts } = await handleRouteAuthorization();
+      // make request
+      const { data, status } = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/disco/payments/${id}/receipt/?account=${accounts[0]["id"]}`,
+        {
+          headers: headers,
+        }
+      );
+
+      console.log(data, status, "the devices");
+      if (status === 200) {
+        console.log(data, "the devices");
+        //  return { msg: data.results, success: true };
+      }
+    } catch (error) {
+      console.log(error, "this is the error");
+      //  return { msg: "error.response.data.detail", success: false };
+    }
+  }
 };
 
 export default Transaction;

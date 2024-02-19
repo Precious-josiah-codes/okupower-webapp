@@ -55,6 +55,7 @@ import { motion } from "framer-motion";
 import MetricLoader from "@/components/custom/lazy loaders/MetricLoader";
 import { sectionVariants } from "@/lib/framerVariants";
 import TableLoader from "@/components/custom/lazy loaders/TableLoader";
+import Image from "next/image";
 
 const BranchMeters = () => {
   const [meters, setMeters] = useState(null);
@@ -68,6 +69,7 @@ const BranchMeters = () => {
   const [filterByKey, setFilterByKey] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
   const [loader, setLoader] = useState(false);
+  const [notFoundLoader, setNotFoundLoader] = useState(false);
   const [meterLoader, setMeterLoader] = useState(true);
   const isFirstRender = useRef(true);
   const router = useRouter();
@@ -142,7 +144,9 @@ const BranchMeters = () => {
                 <Button
                   onClick={handleMeterSearch}
                   className={`${
-                    searchLoader ? "pointer-events-none" : "pointer-events-auto"
+                    searchLoader || searchTerm.trim().length === 0
+                      ? "pointer-events-none"
+                      : "pointer-events-auto"
                   }`}
                 >
                   {searchLoader ? <Loader /> : <Search className="h-4 w-4 " />}
@@ -483,8 +487,34 @@ const BranchMeters = () => {
         {/* branch meter table skeleton loader */}
         {meterLoader && <TableLoader />}
 
+        {/* not found meters */}
+        {notFoundLoader && (
+          <motion.div
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex justify-center w-full relative"
+          >
+            <div className="relative h-[18rem] w-[18rem] text-xs rounded-lg overflow-hidden">
+              <Image
+                src="/notfound.png"
+                alt="not found image"
+                fill
+                sizes="100vw"
+                style={{
+                  objectFit: "cover",
+                }}
+                priority
+              />
+            </div>
+            <h1 className="absolute bottom-6">
+              ooppss couldn't find the meter your looking for
+            </h1>
+          </motion.div>
+        )}
+
         {/* meter table */}
-        {!meterLoader && (
+        {!meterLoader && meters?.length > 0 && (
           <BranchMeterTable
             meters={meters}
             loader={loader}
@@ -682,6 +712,7 @@ const BranchMeters = () => {
     isFirstRender.current = false;
     setSearchLoader(true);
     setMeterLoader(true);
+    if (notFoundLoader) setNotFoundLoader(false);
     try {
       const { headers, accounts } = await handleRouteAuthorization();
 
@@ -697,6 +728,9 @@ const BranchMeters = () => {
         setSearchLoader(false);
         setMeters(data.results);
         setMeterLoader(false);
+        if (data.results.length === 0) {
+          setNotFoundLoader(true);
+        }
       }
     } catch (error) {
       setSearchLoader(false);
@@ -709,6 +743,7 @@ const BranchMeters = () => {
   // handle clear search
   async function handleClearSearch() {
     setMeters(defaultMeters);
+    setNotFoundLoader(false);
   }
 
   // handle sorting
@@ -771,6 +806,7 @@ const BranchMeters = () => {
     setFilterBy("");
     setMeters(defaultMeters);
   }
+
   // handle clear sorting for the bands
   function handleClearSorting(sortBy) {
     setSortBy(sortBy);

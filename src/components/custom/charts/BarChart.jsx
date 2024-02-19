@@ -53,12 +53,12 @@ const data = [
   },
 ];
 
-const BarCharts = () => {
+const BarCharts = ({ data }) => {
   return (
     <ResponsiveContainer width={1000} height={350}>
       <BarChart data={data}>
         <XAxis
-          dataKey="name"
+          dataKey="month"
           stroke="#888888"
           fontSize={12}
           tickLine={false}
@@ -69,9 +69,9 @@ const BarCharts = () => {
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `$${value}`}
+          tickFormatter={(value) => `${value}`}
         />
-        <Bar dataKey="total" fill="#046B21" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="load" fill="#046B21" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

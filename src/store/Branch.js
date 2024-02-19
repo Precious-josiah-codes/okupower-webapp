@@ -138,11 +138,11 @@ export const searchBranches = async (searchTerm) => {
     }
   } catch (error) {
     console.error("error: ", error);
-    return { msg: error.response.data.detail, success: false };
+    return { msg: error.data.detail, success: false };
   }
 };
 
-// clear search and sroting
+// clear search and sorting
 export const clearSearchSort = () => {
   const defaultBranches = useBranchStore.getState().defaultBranchData;
   useBranchStore.setState({ branches: defaultBranches });

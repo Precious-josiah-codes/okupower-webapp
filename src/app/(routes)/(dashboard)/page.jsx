@@ -10,7 +10,6 @@ import {
   validateSession,
 } from "@/store/Account";
 import {
-  clearSearchFilter,
   clearSearchSort,
   getBranches,
   searchBranches,
@@ -53,6 +52,7 @@ import MetricLoaderSection from "@/sections/MetricLoaderSection";
 import BranchLoader from "@/components/custom/lazy loaders/BranchLoader";
 import { motion } from "framer-motion";
 import { sectionVariants } from "@/lib/framerVariants";
+import Loader2 from "@/components/custom/Loader2";
 
 const Branches = () => {
   const [profile] = useAccountStore((state) => [state.profile]);
@@ -61,48 +61,19 @@ const Branches = () => {
     state.branches,
     state.branchesCount,
   ]);
-  const [dashboardLoader] = useUIStore((state) => [state.dashboardLoader]);
   const [sortByTitle, setSortByTitle] = useState("-created_at");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
+  const [sortLoader, setSortLoader] = useState(false);
   const [branchLoader, setBranchLoader] = useState(true);
   // const [isFirstRender, setIsFirstRender] = useState(1);
   const isFirstRender = useRef(true);
 
   // validateSession();
   useEffect(() => {
-    // get the user profile
-    async function handleGetProfile() {
-      const profileResponse = await getUserProfile();
-
-      if (profileResponse) {
-        // get the metric data
-        const [branchesMetric, branches] = await Promise.all([
-          getBranchesMetric(),
-          getBranches(),
-        ]);
-
-        // Check if all requests were successful
-        const allRequestsSuccessful = [branchesMetric, branches].every(
-          (result) => result === true
-        );
-
-        // toggle the loader, if all request were successfull
-        if (allRequestsSuccessful) {
-          setBranchLoader(false);
-        }
-      }
-    }
-
-    // if profile is not set
-    if (!profile) {
-      console.log("run");
-      // get the profile
-      handleGetProfile();
-    } else {
-      // get the metric data
-      // handleOverviewMetric();
-    }
+    getUserProfile();
+    getBranchesMetric();
+    getBranches();
   }, []);
 
   useEffect(() => {
@@ -110,7 +81,7 @@ const Branches = () => {
     if (isFirstRender.current === false) {
       // if the search term is cleared
       if (searchTerm.trim().length === 0) {
-        clearSearchFilter();
+        clearSearchSort();
       }
     }
   }, [searchTerm]);
@@ -185,7 +156,11 @@ const Branches = () => {
                     <span
                       className={`text-sm text-black group-hover:text-black`}
                     >
-                      <FontAwesomeIcon icon={faChevronDown} />
+                      {!sortLoader ? (
+                        <FontAwesomeIcon icon={faChevronDown} />
+                      ) : (
+                        <Loader2 />
+                      )}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -324,7 +299,7 @@ const Branches = () => {
         </motion.div>
 
         {/* branches skeleton loder - cards */}
-        {branchLoader && (
+        {!branches && (
           <div className="grid sm:grid-cols-3 grid-cols-1 gap-5">
             <BranchLoader />
             <BranchLoader />
@@ -339,8 +314,7 @@ const Branches = () => {
         )}
 
         {/* branches body - cards */}
-
-        {!branchLoader && (
+        {branches && (
           <div className="grid sm:grid-cols-3 grid-cols-1 gap-5">
             {branches?.map((branch, index) => (
               <div key={index}>
@@ -393,14 +367,17 @@ const Branches = () => {
     // TODO: test the sort by created at to check if it working
 
     setSortByTitle(sortBy);
-    setBranchLoader(true);
+    // setBranchLoader(true);
+    setSortLoader(true);
     console.log(sortBy, "srting by");
     const response = await sortBranches(sortBy);
 
     if (response.success) {
-      setBranchLoader(false);
+      // setBranchLoader(false);
+      setSortLoader(false);
     } else {
-      setBranchLoader(false);
+      setSortLoader(false);
+      // setBranchLoader(false);
     }
   }
 

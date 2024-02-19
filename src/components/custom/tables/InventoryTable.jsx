@@ -1,6 +1,11 @@
 import { Checkbox } from "@/components/ui/checkbox";
 
 const InventoryTable = ({ inventories, handleSelectedDeviceFn }) => {
+  const meterType = {
+    ONE_PHASE: "One Phase",
+    THREE_PHASE: "Three Phase",
+  };
+
   return (
     <section>
       <section className="bg-white py-4 rounded-xl text-sm">
@@ -10,7 +15,7 @@ const InventoryTable = ({ inventories, handleSelectedDeviceFn }) => {
             <div className="flex space-x-9">
               <div className="w-3" />
 
-              <h1>Meter ID</h1>
+              <h1>Meter NO</h1>
             </div>
             <div>Date Purchased</div>
             <div>Status</div>
@@ -23,7 +28,7 @@ const InventoryTable = ({ inventories, handleSelectedDeviceFn }) => {
           {/* header for mobile */}
           <div className="sm:hidden block text-black w-full">
             <div className="flex py-5 pl-6 font-bold w-[50rem]">
-              <div>Meter ID</div>
+              <div>Meter NO</div>
               <div className="flex-1">Address</div>
               <div className="flex-1">Name</div>
               <div className="flex-1">Phone Number</div>
@@ -50,10 +55,10 @@ const InventoryTable = ({ inventories, handleSelectedDeviceFn }) => {
               </div>
 
               {/* status */}
-              <div>{device?.status}</div>
+              <div className="capitalize ">{device?.status}</div>
 
               {/* device type */}
-              <div>{device?.type}</div>
+              <div>{meterType[device?.type]}</div>
             </div>
           ))}
         </div>
