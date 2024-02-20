@@ -65,6 +65,7 @@ const Transaction = () => {
   return (
     <section>
       <h1 className="mt-9">View all transaction</h1>
+
       <div
         className={`sm:flex justify-between items-center mt-4 mb-9 ${
           transactions ? "visible" : "invisible"
@@ -430,6 +431,28 @@ const Transaction = () => {
       // make request
       const { data, status } = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/disco/payments/${id}/receipt/?account=${accounts[0]["id"]}`,
+        {
+          headers: headers,
+        }
+      );
+
+      console.log(data, status, "the devices");
+      if (status === 200) {
+        console.log(data, "the devices");
+        //  return { msg: data.results, success: true };
+      }
+    } catch (error) {
+      console.log(error, "this is the error");
+      //  return { msg: "error.response.data.detail", success: false };
+    }
+  }
+
+  async function pay() {
+    try {
+      const { headers, accounts } = await handleRouteAuthorization();
+      // make request
+      const { data, status } = await axios.get(
+        `https://okupower-backend.onrender.com/payments/receipt/b613395654/`,
         {
           headers: headers,
         }

@@ -25,7 +25,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import GiveBonusModal from "../GiveBonusModal";
 import ConfirmDelete from "../ConfirmDelete";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 
@@ -43,6 +43,7 @@ const TransactionTable = ({ transactions }) => {
   };
   const [selectedDevices, setSelectedDevices] = useState([]);
   const [activeMoveBand, setActiveMoveBand] = useState(null);
+  const receiptId = useRef(null);
 
   return (
     <section>
@@ -58,15 +59,20 @@ const TransactionTable = ({ transactions }) => {
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  {/* print reciepts */}
+                  {/* download reciepts */}
                   <div
                     className={`${dropDownItemStyle} ${
-                      true
-                        ? "text-slate-500 pointer-events-none"
-                        : "text-black pointer-events-auto"
+                      selectedDevices.length > 0
+                        ? "text-black pointer-events-auto"
+                        : " text-slate-500 pointer-events-none"
                     }`}
                   >
-                    Print Receipts
+                    <a
+                      href={`https://okupower-backend.onrender.com/payments/receipt/${receiptId.current}/`}
+                      target="_blank"
+                    >
+                      Download Receipts
+                    </a>
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -138,6 +144,7 @@ const TransactionTable = ({ transactions }) => {
       // else add the new device
       const newSelectedDevice = [device, ...selectedDevices];
       setSelectedDevices(newSelectedDevice);
+      receiptId.current = newSelectedDevice[0]["id"];
     }
   }
 };
