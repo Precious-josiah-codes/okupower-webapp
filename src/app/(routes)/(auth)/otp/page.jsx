@@ -10,12 +10,36 @@ import { useEffect, useRef, useState } from "react";
 
 const Otp = () => {
   const [isError, setIsError] = useState(false);
-  const inputRefs = useRef(Array(6).fill());
+  // const inputRefs = useRef(Array(6).fill());
 
   const [authLoader, error] = useAccountStore((state) => [
     state.authLoader,
     state.error,
   ]);
+
+  const inputRefs = useRef([]);
+  const numInputs = 6; // Number of OTP input fields
+
+  // Function to handle input change
+  const handleChange = (index, e) => {
+    const value = e.target.value;
+
+    // Move to the next input field if there's a value
+    if (value && inputRefs.current[index + 1]) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  // Function to handle pasting OTP
+  const handlePaste = (e) => {
+    const pasteData = e.clipboardData.getData("text/plain").trim();
+    if (pasteData.length === numInputs) {
+      // If pasted data length matches, fill input fields
+      for (let i = 0; i < numInputs; i++) {
+        inputRefs.current[i].value = pasteData[i];
+      }
+    }
+  };
 
   // get the user email from the query parameter
   const email = useSearchParams().get("email");
@@ -50,14 +74,15 @@ const Otp = () => {
 
           {/* input fields */}
           <div className="flex w-full justify-between items-center sm:space-x-0 space-x-2">
-            {inputRefs.map((ref, index) => (
-              <Input
-                type="text"
-                className="sm:w-[6rem] sm:h-[6rem] w-[3rem] h-[3rem] text-center bg-transparent rounded-md border border-green-800 font-semibold"
-                ref={ref}
-                maxLength="1"
+            {[...Array(numInputs)].map((_, index) => (
+              <input
                 key={index}
-                onChange={(e) => handleInputChange(e, index)}
+                type="text"
+                maxLength={1}
+                className="sm:w-[6rem] sm:h-[6rem] w-[3rem] h-[3rem] text-center bg-transparent rounded-md border border-green-800 font-semibold"
+                ref={(el) => (inputRefs.current[index] = el)}
+                onChange={(e) => handleChange(index, e)}
+                onPaste={(e) => handlePaste(e)}
               />
             ))}
           </div>
@@ -71,7 +96,7 @@ const Otp = () => {
             {authLoader ? <Loader /> : " Send Token"}
           </Button>
 
-          {error.message.toLowerCase() === "invalid token" && (
+          {error?.message?.toLowerCase() === "invalid token" && (
             <p
               className="underline cursor-pointer text-black"
               onClick={() => resendToken({ email: email })}
@@ -81,30 +106,21 @@ const Otp = () => {
           )}
         </section>
       </main>
-      {isError && (
-        <Alerts type="error" title={error.title} message={error.message} />
+      {error && (
+        <Alerts type="error" title={error?.title} message={error?.message} />
       )}
     </section>
   );
 
-  // Function to handle input changes and navigate between fields
-  function handleInputChange(e, index) {
-    const value = e.target.value;
-    // Focus on the next input field if there's a value
-    if (value && index < inputRefs.length - 1) {
-      inputRefs[index + 1].current.focus();
-    }
-  }
-
   // handle the submit of the otp token
   function handleSubmitOtp() {
     let otps = "";
-    inputRefs.map((inputRef) => {
-      if (inputRef.current.value.length) {
-        console.log(typeof inputRef.current.value);
-        otps += inputRef.current.value;
-      }
-    });
+    console.log(inputRefs.current);
+    if (inputRefs.current.length === 6) {
+      inputRefs.current.forEach((inputRef) => {
+        otps += inputRef.value;
+      });
+    }
 
     if (otps.length === 6) {
       validateToken({ email: email, token: otps });

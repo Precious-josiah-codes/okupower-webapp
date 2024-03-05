@@ -142,7 +142,8 @@ export const validateToken = (token) => {
       window.location.href = "/login";
     })
     .catch(function (error) {
-      console.log(error.response, "error");
+      console.log(Object.values(error.response.data)[0][0], "error");
+
       // reset the authLoader
       useAccountStore.setState((state) => ({
         authLoader: !state.authLoader,
@@ -152,7 +153,7 @@ export const validateToken = (token) => {
       useAccountStore.setState((state) => ({
         error: {
           title: "Error",
-          message: Object.values(error.response.data)[0],
+          message: Object.values(error.response.data)[0][0],
         },
       }));
     });

@@ -46,7 +46,7 @@ const InventoryTable = ({ inventories, handleSelectedDeviceFn }) => {
                 <Checkbox
                   onCheckedChange={() => handleSelectedDeviceFn(device)}
                 />
-                <h1>{device?.serial_no}</h1>
+                <h1>#{device?.meter_no}</h1>
               </div>
 
               {/* date purchased */}

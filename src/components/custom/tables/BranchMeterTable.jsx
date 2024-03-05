@@ -224,8 +224,14 @@ const BranchMeterTable = ({
             {/* status */}
             <div>
               <span
-                className={`text-sm rounded-full text-white px-3 py-1 ${
-                  true ? "bg-[#0F732B]" : "bg-[#BF1D1D]"
+                className={`text-xs font-semibold rounded-full text-white px-3 py-1 ${
+                  meter.status === "ASSIGNED"
+                    ? "bg-[#0F732B]"
+                    : meter.status === "BREACHED"
+                    ? "bg-red-500"
+                    : meter.status === "CONNECTED"
+                    ? "bg-[#0F732B]"
+                    : "bg-gray-600"
                 }`}
               >
                 {meter.status}

@@ -100,7 +100,7 @@ export async function middleware(req) {
     } catch (error) {
       console.error("Error => ", error);
       // TODO: try redirecting the user back to the dashboard on the dashboard page
-      return NextResponse.redirect(new URL("/loading", req.url));
+      return NextResponse.redirect(new URL("/", req.url));
     }
   }
 }
