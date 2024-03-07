@@ -100,7 +100,7 @@ const Sidebar = () => {
     >
       <div className="h-full flex flex-col  py-4 overflow-y-auto 2xl:py-[3.3rem] ">
         {/* start logo/brand name */}
-        <div className="h-[3rem] w-[6rem] relative mx-auto">
+        <div className="h-[3rem] w-[6rem] relative ml-3">
           <Image
             className="object-contain w-full h-full"
             src="/white_logo.png"
