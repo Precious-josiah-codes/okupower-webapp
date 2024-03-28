@@ -100,7 +100,7 @@ const Sidebar = () => {
     >
       <div className="h-full flex flex-col  py-4 overflow-y-auto 2xl:py-[3.3rem] ">
         {/* start logo/brand name */}
-        <div className="flex items-center space-x-4">
+        <div className="">
           <div className="h-[3rem] w-[6rem] relative ml-3">
             <Image
               className="object-contain w-full h-full"
@@ -110,7 +110,9 @@ const Sidebar = () => {
               priority
             />
           </div>
-          <h1 className="text-white font-bold text-lg">AMI</h1>
+          <h1 className="text-black font-bold text-sm absolute left-12 top-[3.2rem]">
+            AMI
+          </h1>
         </div>
         {/* start logo/brand name */}
 
